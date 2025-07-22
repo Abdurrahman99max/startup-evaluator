@@ -22,16 +22,108 @@ const AnalyzerApp = ({ onBackToLanding }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Demo analysis function for testing without n8n
+  // Configuration for n8n webhook
+  const N8N_WEBHOOK_URL = process.env.REACT_APP_N8N_WEBHOOK_URL || 'https://your-n8n-instance.com/webhook/startup-analysis';
+  const DEMO_MODE = process.env.REACT_APP_DEMO_MODE === 'true';
+
+  // Real API call to n8n webhook
+  const callN8nWebhook = async (ideaText) => {
+    // Validate input
+    if (!ideaText || ideaText.trim().length === 0) {
+      throw new Error('Invalid input: idea text is required');
+    }
+
+    if (ideaText.length > 5000) {
+      throw new Error('Input too long: please limit your idea description to 5000 characters');
+    }
+
+    // Check if webhook URL is configured
+    if (!N8N_WEBHOOK_URL || N8N_WEBHOOK_URL.includes('your-n8n-instance.com')) {
+      throw new Error('Webhook URL not configured. Please set REACT_APP_N8N_WEBHOOK_URL environment variable.');
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+    try {
+      const response = await fetch(N8N_WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          idea: ideaText.trim(),
+          timestamp: new Date().toISOString(),
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Invalid response format: expected JSON');
+      }
+
+      const data = await response.json();
+      
+      // Validate the response structure
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid response format from analysis service');
+      }
+
+      // Check for error in response
+      if (data.error) {
+        throw new Error(`Analysis service error: ${data.message || data.error}`);
+      }
+
+      // Ensure all required fields are present
+      const requiredFields = ['summary', 'market_potential', 'key_risks', 'suggestions', 'final_verdict', 'validation_strategy'];
+      const missingFields = requiredFields.filter(field => !data[field] || data[field].trim() === '');
+      
+      if (missingFields.length > 0) {
+        throw new Error(`Missing required fields in response: ${missingFields.join(', ')}`);
+      }
+
+      // Clean and validate field contents
+      const cleanedData = {};
+      requiredFields.forEach(field => {
+        cleanedData[field] = typeof data[field] === 'string' ? data[field].trim() : data[field];
+      });
+
+      return cleanedData;
+
+    } catch (error) {
+      clearTimeout(timeoutId);
+      
+      if (error.name === 'AbortError') {
+        throw new Error('Request timeout: Analysis service took too long to respond');
+      }
+      
+      throw error;
+    }
+  };
+
+  // Fallback demo analysis for testing (only used when DEMO_MODE is true)
   const generateDemoAnalysis = (ideaText) => {
-    return {
-      summary: `Your startup idea focuses on ${ideaText.toLowerCase().includes('ai') ? 'leveraging AI technology' : 'solving a common problem'} in an innovative way. The concept shows potential for addressing real user needs with a scalable solution.`,
-      market_potential: "The target market shows strong growth potential with increasing demand for digital solutions. Competition exists but there's room for differentiation through unique features and user experience. Early adoption could be driven by tech-savvy users before expanding to mainstream markets.",
-      key_risks: "Main challenges include user acquisition costs, market saturation, technical complexity, and potential regulatory hurdles. User retention and monetization strategy will be critical for long-term success. Data privacy and security concerns may impact user trust.",
-      suggestions: "Focus on building an MVP with core features first. Conduct thorough market research and user interviews. Consider partnerships with established players. Implement strong data security measures. Develop a clear monetization strategy that aligns with user value.",
-      final_verdict: "Promising idea with potential - Needs validation and refinement",
-      validation_strategy: "Create a landing page to gauge interest, conduct user surveys, build a simple prototype for testing, reach out to potential early adopters, and analyze competitor responses to similar solutions."
-    };
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          summary: `Your startup idea focuses on ${ideaText.toLowerCase().includes('ai') ? 'leveraging AI technology' : 'solving a common problem'} in an innovative way. The concept shows potential for addressing real user needs with a scalable solution.`,
+          market_potential: "The target market shows strong growth potential with increasing demand for digital solutions. Competition exists but there's room for differentiation through unique features and user experience. Early adoption could be driven by tech-savvy users before expanding to mainstream markets.",
+          key_risks: "Main challenges include user acquisition costs, market saturation, technical complexity, and potential regulatory hurdles. User retention and monetization strategy will be critical for long-term success. Data privacy and security concerns may impact user trust.",
+          suggestions: "Focus on building an MVP with core features first. Conduct thorough market research and user interviews. Consider partnerships with established players. Implement strong data security measures. Develop a clear monetization strategy that aligns with user value.",
+          final_verdict: "Promising idea with potential - Needs validation and refinement",
+          validation_strategy: "Create a landing page to gauge interest, conduct user surveys, build a simple prototype for testing, reach out to potential early adopters, and analyze competitor responses to similar solutions."
+        });
+      }, 2000);
+    });
   };
 
   const analyzeIdea = async () => {
@@ -44,17 +136,51 @@ const AnalyzerApp = ({ onBackToLanding }) => {
     setError('');
     setAnalysis(null);
 
-    // Simulate API call delay
-    setTimeout(() => {
-      try {
-        const demoAnalysis = generateDemoAnalysis(idea);
-        setAnalysis(demoAnalysis);
-      } catch (err) {
-        setError('Failed to analyze your idea. Please try again.');
-      } finally {
-        setLoading(false);
+    try {
+      let analysisResult;
+      
+      if (DEMO_MODE) {
+        // Use demo mode for testing
+        analysisResult = await generateDemoAnalysis(idea);
+      } else {
+        // Use real n8n webhook
+        analysisResult = await callN8nWebhook(idea);
       }
-    }, 2000);
+      
+      setAnalysis(analysisResult);
+    } catch (err) {
+      console.error('Analysis error:', err);
+      
+      // Provide specific error messages based on the error type
+      if (err.message.includes('Webhook URL not configured')) {
+        setError('Configuration error: Analysis service URL not set. Please contact support.');
+      } else if (err.message.includes('Input too long')) {
+        setError('Your idea description is too long. Please shorten it to under 5000 characters.');
+      } else if (err.message.includes('Request timeout')) {
+        setError('Analysis is taking longer than expected. Please try again.');
+      } else if (err.message.includes('HTTP error')) {
+        const status = err.message.match(/status: (\d+)/)?.[1];
+        if (status === '429') {
+          setError('Too many requests. Please wait a moment and try again.');
+        } else if (status === '500') {
+          setError('Analysis service is temporarily unavailable. Please try again later.');
+        } else {
+          setError('Unable to connect to analysis service. Please check your internet connection and try again.');
+        }
+      } else if (err.message.includes('Invalid response format')) {
+        setError('Received invalid response from analysis service. Please try again.');
+      } else if (err.message.includes('Missing required fields')) {
+        setError('Analysis service returned incomplete data. Please try again.');
+      } else if (err.message.includes('Analysis service error')) {
+        setError(`Analysis failed: ${err.message.replace('Analysis service error: ', '')}`);
+      } else if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        setError('Network error: Unable to reach analysis service. Please check your connection.');
+      } else {
+        setError('An unexpected error occurred during analysis. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getVerdictColor = (verdict) => {
@@ -92,6 +218,11 @@ const AnalyzerApp = ({ onBackToLanding }) => {
             </button>
             <div className="h-6 w-px bg-gray-300"></div>
             <div className="text-xl font-bold text-gray-800">Startup Evaluator</div>
+            {DEMO_MODE && (
+              <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-medium">
+                Demo Mode
+              </div>
+            )}
           </div>
         </div>
       </nav>
@@ -137,13 +268,24 @@ const AnalyzerApp = ({ onBackToLanding }) => {
                     value={idea}
                     onChange={(e) => setIdea(e.target.value)}
                     placeholder="e.g., An app that uses AI to help people find the perfect pet based on their lifestyle, living situation, and preferences..."
-                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200"
+                    className={`w-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 ${
+                      idea.length > 5000 ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
                     rows={window.innerWidth < 768 ? 4 : 6}
                     disabled={loading}
+                    maxLength={5000}
                   />
-                  <p className="text-sm text-gray-500 mt-2">
-                    Be as detailed as possible. Include target audience, key features, and what problem you're solving.
-                  </p>
+                  <div className="flex justify-between items-start mt-2">
+                    <p className="text-sm text-gray-500">
+                      Be as detailed as possible. Include target audience, key features, and what problem you're solving.
+                    </p>
+                    <p className={`text-sm ml-4 ${
+                      idea.length > 5000 ? 'text-red-600 font-medium' :
+                      idea.length > 4500 ? 'text-yellow-600' : 'text-gray-400'
+                    }`}>
+                      {idea.length}/5000
+                    </p>
+                  </div>
                 </div>
 
                 {/* Error Display */}
@@ -160,7 +302,7 @@ const AnalyzerApp = ({ onBackToLanding }) => {
                 <div className="text-center">
                   <button
                     onClick={analyzeIdea}
-                    disabled={loading || !idea.trim()}
+                    disabled={loading || !idea.trim() || idea.length > 5000}
                     className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-8 md:px-12 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
                     {loading ? (
