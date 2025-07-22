@@ -1,70 +1,53 @@
-# Getting Started with Create React App
+# Startup Evaluator
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern, responsive web app for validating startup ideas with instant AI-powered insights. Built for founders, students, and innovators who want fast, actionable feedback.
 
-## Available Scripts
+## Features
+- **Landing Page**: Marketing-focused, explains the product, shows sample analysis, and encourages users to try the app.
+- **Web App**: Lets users input their startup idea and receive a detailed analysis (market potential, risks, suggestions, validation strategy, and verdict).
+- **Navigation**: Simple navigation between the landing page and the analysis app.
+- **Responsive Design**: Mobile-first, works beautifully on all devices.
 
-In the project directory, you can run:
+## Project Structure
+- `src/` — Standard React app entry (index.js, index.css, etc.)
+- `startup_evaluator.tsx` — Main app logic, contains both the landing page and the analyzer app components.
+- `public/` — Static assets.
+- `tailwind.config.js` — Tailwind CSS configuration for utility-first styling.
 
-### `npm start`
+## How It Works
+- **Landing Page**: 
+  - Hero section with call-to-action.
+  - "How It Works" steps.
+  - Sample analysis (accordion style for details).
+  - Social proof and testimonials.
+  - Final call-to-action.
+- **Analyzer App**:
+  - Users describe their idea in a text area.
+  - Click "Get AI Analysis" to receive instant feedback (demo logic, can be connected to real AI backend).
+  - Results are shown in a clear, sectioned report.
+  - Users can analyze another idea or return to the landing page.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Code Overview
+- **startup_evaluator.tsx**
+  - `LandingPage` component: Handles all landing/marketing content and navigation to the app.
+  - `AnalyzerApp` component: Handles idea input, analysis logic, and displaying results.
+  - `App` component: Controls which view is shown (landing or app) using React state.
+- **Styling**: Uses Tailwind CSS for all layout and responsive design. Utility classes ensure mobile, tablet, and desktop support.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## How to Run/Modify
+1. Install dependencies: `npm install`
+2. Start the app: `npm start` (runs on http://localhost:3000)
+3. To modify the landing page or app, edit `startup_evaluator.tsx`.
+4. For global styles, use `src/index.css` and Tailwind utilities.
 
-### `npm test`
+## Customization
+- To connect to a real AI backend, replace the demo analysis logic in `AnalyzerApp` with an API call.
+- To change the landing page content, edit the relevant sections in `LandingPage`.
+- To adjust styling, use Tailwind classes or update the Tailwind config.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Responsive Design
+- The layout uses Tailwind's responsive utilities (`md:`, `lg:`, etc.) to ensure all sections adapt to different screen sizes.
+- Test on mobile and desktop for best results.
 
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## License
+MIT. Use and modify freely for your own startup projects!
