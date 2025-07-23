@@ -33,7 +33,7 @@ const AnalyzerApp = ({ onBackToLanding }) => {
 
   // Configuration for n8n webhook
   const N8N_WEBHOOK_URL = process.env.REACT_APP_N8N_WEBHOOK_URL || 'https://ireinstark.app.n8n.cloud/webhook/startup-evaluator';
-  const DEMO_MODE = process.env.REACT_APP_DEMO_MODE === 'true';
+  const DEMO_MODE = process.env.REACT_APP_DEMO_MODE === 'false';
 
   // Real API call to n8n webhook
   const callN8nWebhook = async (ideaText) => {
@@ -81,32 +81,55 @@ const AnalyzerApp = ({ onBackToLanding }) => {
       }
 
       const data = await response.json();
-      
-      // Validate the response structure
-      if (!data || typeof data !== 'object') {
-        throw new Error('Invalid response format from analysis service');
-      }
 
-      // Check for error in response
-      if (data.error) {
-        throw new Error(`Analysis service error: ${data.message || data.error}`);
-      }
+      // DEBUG: Log the actual response structure
+      console.log('Raw API Response:', JSON.stringify(data, null, 2));
+      console.log('Response keys:', Object.keys(data));
+      console.log('Response types:', Object.keys(data).map(key => `${key}: ${typeof data[key]}`));
 
-      // Ensure all required fields are present
+      // Normalize field names
+      const mapFieldNames = (data) => {
+        const fieldMapping = {
+          'summary': ['summary', 'Summary'],
+          'market_potential': ['market_potential', 'marketPotential', 'market_analysis', 'marketAnalysis'],
+          'key_risks': ['key_risks', 'keyRisks', 'risks', 'Risks'],
+          'suggestions': ['suggestions', 'Suggestions', 'recommendations', 'improvements'],
+          'final_verdict': ['final_verdict', 'finalVerdict', 'verdict', 'Verdict'],
+          'validation_strategy': ['validation_strategy', 'validationStrategy', 'validation', 'strategy']
+        };
+
+        const normalizedData = {};
+        
+        Object.keys(fieldMapping).forEach(standardField => {
+          const possibleNames = fieldMapping[standardField];
+          for (const name of possibleNames) {
+            if (data[name] && typeof data[name] === 'string' && data[name].trim()) {
+              normalizedData[standardField] = data[name].trim();
+              break;
+            }
+          }
+        });
+
+        return normalizedData;
+      };
+
+      console.log('Raw response:', data);
+
+      // Normalize field names
+      const normalizedData = mapFieldNames(data);
+      console.log('Normalized data:', normalizedData);
+
+      // Check if we have all required fields after normalization
       const requiredFields = ['summary', 'market_potential', 'key_risks', 'suggestions', 'final_verdict', 'validation_strategy'];
-      const missingFields = requiredFields.filter(field => !data[field] || data[field].trim() === '');
-      
+      const missingFields = requiredFields.filter(field => !normalizedData[field]);
+
       if (missingFields.length > 0) {
-        throw new Error(`Missing required fields in response: ${missingFields.join(', ')}`);
+        console.error('Missing fields after normalization:', missingFields);
+        console.error('Available fields:', Object.keys(normalizedData));
+        throw new Error(`Analysis service returned incomplete data. Missing: ${missingFields.join(', ')}`);
       }
 
-      // Clean and validate field contents
-      const cleanedData = {};
-      requiredFields.forEach(field => {
-        cleanedData[field] = typeof data[field] === 'string' ? data[field].trim() : data[field];
-      });
-
-      return cleanedData;
+      return normalizedData;
 
     } catch (error) {
       clearTimeout(timeoutId);
