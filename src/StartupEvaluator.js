@@ -32,8 +32,8 @@ const AnalyzerApp = ({ onBackToLanding }) => {
   }, []);
 
   // Configuration for n8n webhook
-  const N8N_WEBHOOK_URL = process.env.REACT_APP_N8N_WEBHOOK_URL || 'https://ireinstark.app.n8n.cloud/webhook/startup-evaluator';
-  const DEMO_MODE = process.env.REACT_APP_DEMO_MODE === 'false';
+  const N8N_WEBHOOK_URL = process.env.REACT_APP_N8N_WEBHOOK_URL || 'https://ireinstark.app.n8n.cloud/webhook-test/startup-evaluator';
+
 
   // Real API call to n8n webhook
   const callN8nWebhook = async (ideaText) => {
@@ -159,22 +159,6 @@ const AnalyzerApp = ({ onBackToLanding }) => {
     }
   };
 
-  // Fallback demo analysis for testing (only used when DEMO_MODE is true)
-  const generateDemoAnalysis = (ideaText) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          summary: `Your startup idea focuses on ${ideaText.toLowerCase().includes('ai') ? 'leveraging AI technology' : 'solving a common problem'} in an innovative way. The concept shows potential for addressing real user needs with a scalable solution.`,
-          market_potential: "The target market shows strong growth potential with increasing demand for digital solutions. Competition exists but there's room for differentiation through unique features and user experience. Early adoption could be driven by tech-savvy users before expanding to mainstream markets.",
-          key_risks: "Main challenges include user acquisition costs, market saturation, technical complexity, and potential regulatory hurdles. User retention and monetization strategy will be critical for long-term success. Data privacy and security concerns may impact user trust.",
-          suggestions: "Focus on building an MVP with core features first. Conduct thorough market research and user interviews. Consider partnerships with established players. Implement strong data security measures. Develop a clear monetization strategy that aligns with user value.",
-          final_verdict: "Promising idea with potential - Needs validation and refinement",
-          validation_strategy: "Create a landing page to gauge interest, conduct user surveys, build a simple prototype for testing, reach out to potential early adopters, and analyze competitor responses to similar solutions."
-        });
-      }, 2000);
-    });
-  };
-
   const analyzeIdea = async () => {
     if (!idea.trim()) {
       setError('Please describe your startup idea');
@@ -185,32 +169,22 @@ const AnalyzerApp = ({ onBackToLanding }) => {
     console.log('🚀 Starting analysis...');
     console.log('📊 Environment variables:');
     console.log('  WEBHOOK_URL:', N8N_WEBHOOK_URL);
-    console.log('  DEMO_MODE:', DEMO_MODE);
-    console.log('  DEMO_MODE (raw):', process.env.REACT_APP_DEMO_MODE);
 
     setLoading(true);
     setError('');
     setAnalysis(null);
 
     try {
-      let analysisResult;
-      
-      if (DEMO_MODE) {
-        console.log('🎯 Using DEMO MODE');
-        // Use demo mode for testing
-        analysisResult = await generateDemoAnalysis(idea);
-      } else {
-        console.log('🔗 Using WEBHOOK MODE');
-        console.log('🌐 Calling webhook:', N8N_WEBHOOK_URL);
-        // Use real n8n webhook
-        analysisResult = await callN8nWebhook(idea);
-      }
-      
+      // Only use real n8n webhook
+      console.log('🔗 Using WEBHOOK MODE');
+      console.log('🌐 Calling webhook:', N8N_WEBHOOK_URL);
+      const analysisResult = await callN8nWebhook(idea);
+
       console.log('✅ Analysis completed successfully');
       setAnalysis(analysisResult);
     } catch (err) {
       console.error('Analysis error:', err);
-      
+
       // Provide specific error messages based on the error type
       if (err.message.includes('Webhook URL not configured')) {
         setError('Configuration error: Analysis service URL not set. Please contact support.');
@@ -257,12 +231,6 @@ const AnalyzerApp = ({ onBackToLanding }) => {
     return React.createElement(XCircle, { className: "w-6 h-6 text-red-600" });
   };
 
-  const demoIdeas = [
-    "AI-powered meal planning app that generates personalized ingredient lists and recipes for healthier living.",
-    "A platform that connects remote workers with local co-working spaces for day passes",
-    "Smart home device that monitors air quality and automatically adjusts HVAC settings"
-  ];
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* App Header */}
@@ -278,11 +246,6 @@ const AnalyzerApp = ({ onBackToLanding }) => {
             </button>
             <div className="h-6 w-px bg-gray-300"></div>
             <div className="text-xl font-bold text-gray-800">Startup Evaluator</div>
-            {DEMO_MODE && (
-              <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-medium">
-                Demo Mode
-              </div>
-            )}
           </div>
         </div>
       </nav>
@@ -301,22 +264,6 @@ const AnalyzerApp = ({ onBackToLanding }) => {
             </div>
 
             <div className="bg-white rounded-xl shadow-2xl border border-gray-200 p-6 md:p-8 lg:p-10">
-              {/* Demo Ideas */}
-              <div className="mb-6 md:mb-8">
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">Try a sample idea:</h3>
-                <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
-                  {demoIdeas.map((demoIdea, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setIdea(demoIdea)}
-                      className="text-sm bg-blue-50 text-blue-700 px-4 py-2 rounded-full hover:bg-blue-100 transition-colors duration-200 border border-blue-200 text-left sm:text-center"
-                    >
-                      {demoIdea.length > 60 ? `${demoIdea.substring(0, 60)}...` : demoIdea}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Main Input */}
               <div className="space-y-6">
                 <div>
