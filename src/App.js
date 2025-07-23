@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import StartupEvaluator from './StartupEvaluator.js';
+import StartupEvaluator from './StartupEvaluator';
 
 function App() {
   return (
