@@ -268,19 +268,19 @@ const AnalyzerApp = ({ onBackToLanding }) => {
                     value={idea}
                     onChange={(e) => setIdea(e.target.value)}
                     placeholder="e.g., An app that uses AI to help people find the perfect pet based on their lifestyle, living situation, and preferences..."
-                    className={`w-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 ${
+                    className={`w-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 h-24 md:h-32 ${
                       idea.length > 5000 ? 'border-red-300 bg-red-50' : 'border-gray-300'
                     }`}
-                    rows={window.innerWidth < 768 ? 4 : 6}
+                    rows={6}
                     disabled={loading}
                     maxLength={5000}
                   />
-                  <div className="flex justify-between items-start mt-2">
-                    <p className="text-sm text-gray-500">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mt-2 space-y-2 sm:space-y-0">
+                    <p className="text-sm text-gray-500 flex-1 mr-0 sm:mr-4">
                       Be as detailed as possible. Include target audience, key features, and what problem you're solving.
                     </p>
-                    <p className={`text-sm ml-4 ${
-                      idea.length > 5000 ? 'text-red-600 font-medium' :
+                    <p className={`text-sm font-medium whitespace-nowrap ${
+                      idea.length > 5000 ? 'text-red-600' :
                       idea.length > 4500 ? 'text-yellow-600' : 'text-gray-400'
                     }`}>
                       {idea.length}/5000
