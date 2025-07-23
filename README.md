@@ -63,11 +63,12 @@ A responsive React web application that helps entrepreneurs validate their start
 
 ## ✨ Features
 
-- **🤖 AI-Powered Analysis**: Get instant insights on market potential, risks, and validation strategies
+- **🤖 AI-Powered Analysis**: Real AI analysis via n8n webhooks (OpenAI, Anthropic, etc.)
 - **📱 Fully Responsive**: Works seamlessly on mobile, tablet, and desktop devices
 - **🎨 Modern UI**: Clean, professional design with smooth animations
 - **🚀 Fast & Lightweight**: Built with React and optimized for performance
-- **🎯 Demo Mode**: Try sample ideas before inputting your own
+- **🔧 Configurable**: Easy webhook setup with environment variables
+- **🎯 Demo Mode**: Fallback demo mode for testing and development
 
 ## 🎬 Live Demo
 
@@ -82,6 +83,10 @@ The app includes:
 # Install dependencies
 npm install
 
+# Configure environment (copy and edit .env file)
+cp .env .env.local
+# Edit .env.local with your n8n webhook URL
+
 # Start development server
 npm start
 
@@ -90,6 +95,15 @@ npm run build
 ```
 
 The app will be available at `http://localhost:3000`
+
+### 🔧 Configuration
+
+1. **Set up n8n webhook** - Follow [`N8N_SETUP_GUIDE.md`](./N8N_SETUP_GUIDE.md)
+2. **Configure environment variables** in `.env.local`:
+   ```env
+   REACT_APP_N8N_WEBHOOK_URL=https://your-n8n-instance.com/webhook/startup-analysis
+   REACT_APP_DEMO_MODE=false
+   ```
 
 ## 📋 What You Get
 

@@ -118,12 +118,13 @@ StartupEvaluator (Main App)
 
 ## Key Features Explained
 
-### 🤖 AI Analysis Simulation
-The app currently uses a demo analysis function that:
-- Detects AI-related keywords in input
-- Generates contextual responses
-- Provides realistic insights based on common startup patterns
-- Simulates processing time for authentic feel
+### 🤖 AI Analysis Integration
+The app integrates with n8n webhooks for real AI analysis:
+- **Real AI Processing**: Connects to actual AI services (OpenAI, Anthropic, etc.)
+- **Webhook Integration**: Uses n8n workflows for flexible AI processing
+- **Demo Mode**: Fallback demo mode available for testing
+- **Error Handling**: Comprehensive error handling for API failures
+- **Response Validation**: Ensures all required analysis fields are present
 
 ### 🎨 Design System
 - **Primary Color**: Blue (#2563eb)
@@ -140,6 +141,35 @@ The app currently uses a demo analysis function that:
 4. **Suggestions**: Actionable recommendations for improvement
 5. **Validation Strategy**: Specific steps to validate the business idea
 6. **Final Verdict**: Color-coded overall assessment
+
+## Configuration
+
+### Environment Variables
+
+The app uses environment variables for configuration:
+
+```env
+# n8n Webhook Configuration
+REACT_APP_N8N_WEBHOOK_URL=https://your-n8n-instance.com/webhook/startup-analysis
+
+# Demo Mode (set to 'true' for testing, 'false' for production)
+REACT_APP_DEMO_MODE=false
+```
+
+### n8n Webhook Setup
+
+To use real AI analysis, you need to set up an n8n workflow. See [`N8N_SETUP_GUIDE.md`](./N8N_SETUP_GUIDE.md) for detailed instructions on:
+
+- Creating the webhook trigger
+- Setting up AI analysis nodes
+- Configuring response processing
+- Error handling and validation
+- Security considerations
+
+### Demo Mode vs Production Mode
+
+- **Demo Mode** (`REACT_APP_DEMO_MODE=true`): Uses simulated analysis for testing
+- **Production Mode** (`REACT_APP_DEMO_MODE=false`): Uses real n8n webhook for AI analysis
 
 ## Code Structure
 
@@ -167,7 +197,8 @@ const [error, setError] = useState('');
 - Add custom animations in Tailwind configuration
 
 ### 🔧 Functionality
-- Replace `generateDemoAnalysis()` with real AI API calls
+- **n8n Integration**: Real AI analysis via n8n webhooks (implemented)
+- **Environment Configuration**: Easy webhook URL and mode switching
 - Add user authentication and saved analyses
 - Implement additional analysis categories
 - Add export functionality for reports
