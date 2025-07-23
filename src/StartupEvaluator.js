@@ -32,7 +32,7 @@ const AnalyzerApp = ({ onBackToLanding }) => {
   }, []);
 
   // Configuration for n8n webhook
-  const N8N_WEBHOOK_URL = process.env.REACT_APP_N8N_WEBHOOK_URL || 'https://ireinstark.app.n8n.cloud/webhook-test/startup-evaluator';
+  const N8N_WEBHOOK_URL = process.env.REACT_APP_N8N_WEBHOOK_URL || 'https://ireinstark.app.n8n.cloud/webhook/startup-evaluator';
   const DEMO_MODE = process.env.REACT_APP_DEMO_MODE === 'true';
 
   // Real API call to n8n webhook
