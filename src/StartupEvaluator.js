@@ -28,6 +28,8 @@ const AnalyzerApp = ({ onBackToLanding }) => {
 
   // Real API call to n8n webhook
   const callN8nWebhook = async (ideaText) => {
+    console.log('🔗 callN8nWebhook called with idea length:', ideaText?.length);
+    
     // Validate input
     if (!ideaText || ideaText.trim().length === 0) {
       throw new Error('Invalid input: idea text is required');
@@ -37,27 +39,42 @@ const AnalyzerApp = ({ onBackToLanding }) => {
       throw new Error('Input too long: please limit your idea description to 5000 characters');
     }
 
+    console.log('🔍 Validating webhook URL:', N8N_WEBHOOK_URL);
+    
     // Check if webhook URL is configured
-    if (!N8N_WEBHOOK_URL || N8N_WEBHOOK_URL.includes('your-n8n-instance.com')) {
+    if (!N8N_WEBHOOK_URL || 
+        N8N_WEBHOOK_URL.includes('your-n8n-instance.com') || 
+        N8N_WEBHOOK_URL.includes('your-actual-n8n-webhook-url.com')) {
+      console.error('❌ Webhook URL validation failed');
       throw new Error('Webhook URL not configured. Please set REACT_APP_N8N_WEBHOOK_URL environment variable.');
     }
+
+    console.log('✅ Webhook URL validation passed');
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
     try {
+      const requestPayload = {
+        idea: ideaText.trim(),
+        timestamp: new Date().toISOString(),
+      };
+      
+      console.log('📤 Making request to:', N8N_WEBHOOK_URL);
+      console.log('📦 Request payload:', requestPayload);
+      
       const response = await fetch(N8N_WEBHOOK_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify({
-          idea: ideaText.trim(),
-          timestamp: new Date().toISOString(),
-        }),
+        body: JSON.stringify(requestPayload),
         signal: controller.signal,
       });
+
+      console.log('📥 Response status:', response.status);
+      console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()));
 
       clearTimeout(timeoutId);
 
@@ -132,6 +149,13 @@ const AnalyzerApp = ({ onBackToLanding }) => {
       return;
     }
 
+    // Debug logging
+    console.log('🚀 Starting analysis...');
+    console.log('📊 Environment variables:');
+    console.log('  WEBHOOK_URL:', N8N_WEBHOOK_URL);
+    console.log('  DEMO_MODE:', DEMO_MODE);
+    console.log('  DEMO_MODE (raw):', process.env.REACT_APP_DEMO_MODE);
+
     setLoading(true);
     setError('');
     setAnalysis(null);
@@ -140,13 +164,17 @@ const AnalyzerApp = ({ onBackToLanding }) => {
       let analysisResult;
       
       if (DEMO_MODE) {
+        console.log('🎯 Using DEMO MODE');
         // Use demo mode for testing
         analysisResult = await generateDemoAnalysis(idea);
       } else {
+        console.log('🔗 Using WEBHOOK MODE');
+        console.log('🌐 Calling webhook:', N8N_WEBHOOK_URL);
         // Use real n8n webhook
         analysisResult = await callN8nWebhook(idea);
       }
       
+      console.log('✅ Analysis completed successfully');
       setAnalysis(analysisResult);
     } catch (err) {
       console.error('Analysis error:', err);
