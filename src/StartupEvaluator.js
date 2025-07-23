@@ -21,9 +21,18 @@ const AnalyzerApp = ({ onBackToLanding }) => {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [rows, setRows] = useState(window.innerWidth < 768 ? 4 : 6);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setRows(window.innerWidth < 768 ? 4 : 6);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Configuration for n8n webhook
-  const N8N_WEBHOOK_URL = process.env.REACT_APP_N8N_WEBHOOK_URL || 'https://your-n8n-instance.com/webhook/startup-analysis';
+  const N8N_WEBHOOK_URL = process.env.REACT_APP_N8N_WEBHOOK_URL || 'https://ireinstark.app.n8n.cloud/webhook-test/startup-evaluator';
   const DEMO_MODE = process.env.REACT_APP_DEMO_MODE === 'true';
 
   // Real API call to n8n webhook
@@ -271,7 +280,11 @@ const AnalyzerApp = ({ onBackToLanding }) => {
                     className={`w-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 h-24 md:h-32 ${
                       idea.length > 5000 ? 'border-red-300 bg-red-50' : 'border-gray-300'
                     }`}
+
                     rows={6}
+
+                    rows={rows}
+
                     disabled={loading}
                     maxLength={5000}
                   />
