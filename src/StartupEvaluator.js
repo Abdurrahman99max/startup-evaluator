@@ -283,7 +283,6 @@ const AnalyzerApp = ({ onBackToLanding }) => {
 
                     rows={6}
 
-                    rows={rows}
 
                     disabled={loading}
                     maxLength={5000}
