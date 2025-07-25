@@ -155,7 +155,7 @@ REACT_APP_DEMO_MODE=false
 Before connecting the app, test your webhook:
 
 ```bash
-curl -X POST https://ireinstark.app.n8n.cloud/webhook-test/startup-evaluator \
+curl -X POST https://ireinstark.app.n8n.cloud/webhook/startup-evaluator\
   -H "Content-Type: application/json" \
   -d '{
     "idea": "An AI-powered app that helps people find the perfect pet based on their lifestyle",
